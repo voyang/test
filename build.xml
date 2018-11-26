@@ -1,0 +1,44 @@
+<project basedir="." default="ear" name="EARProj">
+
+	<property name="project.dir" value="." />
+	<property name="deploy.dir" value="${project.dir}/deploy" />
+	<property name="EJBModule.dir" value="../EJBModule" />
+	<property name="ear.meta-inf.dir" value="EarContent/META-INF" />
+
+	<!-- ================================================= -->
+	<!--  Remove files      						       -->
+	<!-- ================================================= -->
+	<target name="clean">
+		<delete dir="${deploy.dir}" />
+	</target>
+
+	<!-- ================================================= -->
+	<!--  Compile JAVA files       					       -->
+	<!-- ================================================= -->
+	<target name="compile" depends="clean">
+		<echo>Create deploy folder</echo>
+		<mkdir dir="${project.dir}/deploy" />
+		<ant antfile="${EJBModule.dir}/build.xml" target="jar" inheritall="false" />
+		<copy file="${EJBModule.dir}/dest/EJBModule.jar" todir="../EARProj/deploy" />
+		<delete dir="${EJBModule.dir}/dest" />
+	</target>
+
+	<!-- ================================================= -->
+	<!--  Create EAR file							       -->
+	<!-- ================================================= -->
+	<target name="ear" depends="compile">
+		<echo>Create EAR file</echo>
+		<jar destfile="${deploy.dir}/${ant.project.name}.ear">
+			<!--  Copy JAR files to EAR/lib				   -->
+			<zipfileset dir="${project.dir}/EarContent/APP-INF/lib" prefix="lib" />
+			<!--  Copy EJBModuleException.jar to EAR/lib	   -->
+			<zipfileset prefix="lib" file="${deploy.dir}/EJBModuleException.jar" />
+			<zipfileset prefix="lib" file="${deploy.dir}/EJBModuleVo.jar" />
+			<zipfileset prefix="lib" file="${deploy.dir}/EJBModuleClient.jar" />
+			<zipfileset file="${ear.meta-inf.dir}/weblogic-application.xml" />
+			<!--  Copy all JAR and WAR files to EAR file   -->
+			<fileset dir="${deploy.dir}/" includes="EJBModule.jar" />
+		</jar>
+	</target>
+
+</project>
